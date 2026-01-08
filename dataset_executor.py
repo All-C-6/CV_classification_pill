@@ -13,9 +13,6 @@ logger = logging.getLogger(__name__)
 setup_logging(log_file_path="logs/dataset_executor.log", level="INFO")
 
 
-
-
-
 class PillDataset(Dataset):
     def __init__(self, dataset_root_path, split='train', image_size=224):
         """
@@ -224,3 +221,34 @@ def download_kaggle_cv_dataset(kaggle_dataset_name: str) -> Path:
         )
         logger.error(error_message)
         raise RuntimeError(error_message) from exception_during_download
+
+
+def debug_dataloader_output(dataloader, dataloader_name="DataLoader"):
+    """Отладка: проверяем что возвращает DataLoader"""
+    print(f"\n{'='*60}")
+    print(f"Отладка {dataloader_name}")
+    print(f"{'='*60}")
+
+    # Получаем один батч
+    batch_data = next(iter(dataloader))
+
+    print(f"Тип возвращаемых данных: {type(batch_data)}")
+
+    if isinstance(batch_data, (list, tuple)):
+        print(f"Количество элементов в батче: {len(batch_data)}")
+        for idx, item in enumerate(batch_data):
+            if isinstance(item, torch.Tensor):
+                print(f"  Элемент {idx}: Tensor, shape={item.shape}, dtype={item.dtype}")
+            else:
+                print(f"  Элемент {idx}: {type(item)}, значение={item}")
+    elif isinstance(batch_data, dict):
+        print(f"Батч - это словарь с ключами: {batch_data.keys()}")
+        for key, value in batch_data.items():
+            if isinstance(value, torch.Tensor):
+                print(f"  '{key}': Tensor, shape={value.shape}, dtype={value.dtype}")
+            else:
+                print(f"  '{key}': {type(value)}")
+    else:
+        print(f"Батч имеет неожиданный тип: {type(batch_data)}")
+
+    return batch_data
